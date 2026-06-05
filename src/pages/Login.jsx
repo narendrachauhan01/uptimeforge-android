@@ -29,8 +29,8 @@ export default function Login() {
     try {
       const idToken = await googleSignIn();
       if (!idToken) { showToast('Google Sign-In cancelled', 'error'); return; }
-      await api.post('/api/users/google-auth', { credential: idToken });
-      await fetchUser();
+      const { data } = await api.post('/api/users/google-auth', { credential: idToken });
+      setUser(data.user);
       nav('/dashboard');
     } catch (err) {
       const errorMsg = err.displayMessage || err.response?.data?.error || err.message || (typeof err === 'string' ? err : JSON.stringify(err)) || 'Google Sign-In failed';
