@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import api from './api/axios';
 import BottomNav from './components/BottomNav';
 import Splash from './pages/Splash';
@@ -12,12 +12,16 @@ import AddSite from './pages/AddSite';
 import SiteDetail from './pages/SiteDetail';
 import Profile from './pages/Profile';
 import Plans from './pages/Plans';
+import Alerts from './pages/Alerts';
+import PingMonitor from './pages/PingMonitor';
+import Integrations from './pages/Integrations';
+import Support from './pages/Support';
 import Toast from './components/Toast';
 
 const AuthCtx = createContext(null);
 export const useAuth = () => useContext(AuthCtx);
 
-const TABS = ['/dashboard', '/sites', '/add-site', '/profile'];
+const TABS = ['/dashboard', '/sites', '/add-site', '/alerts', '/profile'];
 
 function Layout({ children }) {
   const { user } = useAuth();
@@ -32,8 +36,7 @@ function Layout({ children }) {
 }
 
 function SuspendedScreen() {
-  const { setUser } = useAuth();
-  const { user } = useAuth();
+  const { user, setUser } = useAuth();
   const nav = useNavigate();
 
   const logout = async () => {
@@ -89,11 +92,9 @@ function Guard({ children }) {
   const accountStatus = user.accountStatus || 'active';
   if (accountStatus === 'suspended') return <SuspendedScreen />;
 
-  // Only require profile when plan is active — expired users can't save anyway (backend blocks it)
-  if (accountStatus === 'active') {
-    const needsProfile = !user.city || !user.gender || !user.phone;
-    if (needsProfile && loc.pathname !== '/complete-profile') return <Navigate to="/complete-profile" replace />;
-  }
+  // Always require profile completion regardless of plan status
+  const needsProfile = !user.city || !user.gender || !user.phone;
+  if (needsProfile && loc.pathname !== '/complete-profile') return <Navigate to="/complete-profile" replace />;
   return children;
 }
 
@@ -105,7 +106,7 @@ export default function App() {
 
   const showToast = useCallback((msg, type = 'success') => {
     setToast({ msg, type });
-    setTimeout(() => setToast(null), 3000);
+    setTimeout(() => setToast(null), 3500);
   }, []);
 
   const fetchUser = useCallback(async () => {
@@ -147,15 +148,20 @@ export default function App() {
         {toast && <Toast msg={toast.msg} type={toast.type} />}
         <Layout>
           <Routes>
-            <Route path="/login" element={user ? <Navigate to="/dashboard" /> : <Login />} />
+            <Route path="/login"    element={user ? <Navigate to="/dashboard" /> : <Login />} />
             <Route path="/register" element={user ? <Navigate to="/dashboard" /> : <Register />} />
             <Route path="/complete-profile" element={<Guard><CompleteProfile /></Guard>} />
-            <Route path="/dashboard" element={<Guard><Dashboard /></Guard>} />
-            <Route path="/sites" element={<Guard><Sites /></Guard>} />
-            <Route path="/add-site" element={<Guard><AddSite /></Guard>} />
-            <Route path="/sites/:id" element={<Guard><SiteDetail /></Guard>} />
-            <Route path="/profile" element={<Guard><Profile /></Guard>} />
-            <Route path="/plans" element={<Guard><Plans /></Guard>} />
+            <Route path="/dashboard"  element={<Guard><Dashboard /></Guard>} />
+            <Route path="/sites"      element={<Guard><Sites /></Guard>} />
+            <Route path="/add-site"   element={<Guard><AddSite /></Guard>} />
+            <Route path="/sites/:id"  element={<Guard><SiteDetail /></Guard>} />
+            <Route path="/alerts"     element={<Guard><Alerts /></Guard>} />
+            <Route path="/ping-monitor"  element={<Guard><PingMonitor /></Guard>} />
+            <Route path="/integrations"  element={<Guard><Integrations /></Guard>} />
+            <Route path="/support"       element={<Guard><Support /></Guard>} />
+            <Route path="/edit-profile"  element={<Guard><CompleteProfile /></Guard>} />
+            <Route path="/profile"    element={<Guard><Profile /></Guard>} />
+            <Route path="/plans"      element={<Guard><Plans /></Guard>} />
             <Route path="*" element={<Navigate to={user ? '/dashboard' : '/login'} />} />
           </Routes>
         </Layout>

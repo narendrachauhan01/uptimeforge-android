@@ -12,6 +12,20 @@ function InfoRow({ label, value }) {
   );
 }
 
+function MenuLink({ icon, label, badge, onClick, color }) {
+  return (
+    <button onClick={onClick} style={{
+      width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '15px 16px',
+      background: 'none', border: 'none', borderBottom: '1px solid #2d1f6e', cursor: 'pointer', textAlign: 'left',
+    }}>
+      <span style={{ fontSize: 20, width: 24, textAlign: 'center' }}>{icon}</span>
+      <span style={{ flex: 1, fontSize: 14, fontWeight: 600, color: color || '#e2d9f3' }}>{label}</span>
+      {badge && <span style={{ background: '#7c3aed', color: '#fff', borderRadius: 10, padding: '2px 8px', fontSize: 11, fontWeight: 700 }}>{badge}</span>}
+      <span style={{ color: '#4a4070', fontSize: 16 }}>›</span>
+    </button>
+  );
+}
+
 export default function Profile() {
   const { user, setUser, showToast } = useAuth();
   const nav = useNavigate();
@@ -19,17 +33,15 @@ export default function Profile() {
 
   const planInfo = {
     free_trial: { label: 'Free Trial', color: '#c084fc', bg: '#3b0764' },
-    bronze: { label: 'Bronze', color: '#fbbf24', bg: '#451a03' },
-    silver: { label: 'Silver', color: '#94a3b8', bg: '#1e293b' },
-    gold:   { label: 'Gold', color: '#fbbf24', bg: '#422006' },
+    bronze:     { label: 'Bronze',     color: '#fbbf24', bg: '#451a03' },
+    silver:     { label: 'Silver',     color: '#94a3b8', bg: '#1e293b' },
+    gold:       { label: 'Gold',       color: '#fbbf24', bg: '#422006' },
   };
   const plan = planInfo[user?.plan] || planInfo.free_trial;
 
   const logout = async () => {
     setLoggingOut(true);
-    try {
-      await api.post('/api/users/logout');
-    } catch {}
+    try { await api.post('/api/users/logout'); } catch {}
     setUser(null);
     nav('/login');
   };
@@ -68,6 +80,7 @@ export default function Profile() {
           <InfoRow label="Phone" value={user?.phone} />
           <InfoRow label="City" value={user?.city} />
           <InfoRow label="Country" value={user?.country} />
+          <InfoRow label="PIN Code" value={user?.pincode} />
           <InfoRow label="Gender" value={user?.gender ? user.gender.charAt(0).toUpperCase() + user.gender.slice(1) : null} />
           <InfoRow label="Purpose" value={user?.purpose ? user.purpose.charAt(0).toUpperCase() + user.purpose.slice(1) : null} />
         </div>
@@ -81,15 +94,23 @@ export default function Profile() {
           <InfoRow label="Status" value={user?.accountStatus?.charAt(0).toUpperCase() + user?.accountStatus?.slice(1)} />
           {user?.plan === 'free_trial'
             ? <InfoRow label="Trial Ends" value={trialEnd ? `${trialEnd} (${daysLeft}d left)` : null} />
-            : <InfoRow label="Plan Ends" value={planEnd} />
-          }
+            : <InfoRow label="Plan Ends" value={planEnd} />}
+          <InfoRow label="Site Limit" value={user?.siteLimit} />
         </div>
 
-        {/* Actions */}
-        <button className="btn btn-primary" style={{ marginBottom: 10 }} onClick={() => nav('/plans')}>
-          ⚡ Upgrade Plan
-        </button>
+        {/* Quick links */}
+        <div style={{ background: '#1e1350', borderRadius: 14, border: '1px solid #2d1f6e', marginBottom: 16, overflow: 'hidden' }}>
+          <div style={{ padding: '12px 16px', borderBottom: '1px solid #2d1f6e' }}>
+            <div className="section-title" style={{ margin: 0 }}>Manage</div>
+          </div>
+          <MenuLink icon="✏️" label="Edit Profile" onClick={() => nav('/edit-profile')} />
+          <MenuLink icon="🏓" label="Ping Monitor" onClick={() => nav('/ping-monitor')} />
+          <MenuLink icon="🔗" label="Integrations" onClick={() => nav('/integrations')} />
+          <MenuLink icon="📩" label="Support" onClick={() => nav('/support')} />
+          <MenuLink icon="⚡" label="Upgrade Plan" onClick={() => nav('/plans')} />
+        </div>
 
+        {/* Logout */}
         <button className="btn btn-danger" onClick={logout} disabled={loggingOut}>
           {loggingOut ? '⏳ Logging out...' : '🚪 Logout'}
         </button>

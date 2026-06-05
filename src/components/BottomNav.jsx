@@ -1,10 +1,11 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const tabs = [
-  { path: '/dashboard', icon: '⊞', label: 'Home' },
-  { path: '/sites',     icon: '📡', label: 'Sites' },
-  { path: '/add-site',  icon: '＋', label: 'Add' },
-  { path: '/profile',   icon: '👤', label: 'Profile' },
+  { path: '/dashboard', icon: '⊞',  label: 'Home' },
+  { path: '/sites',     icon: '🌐',  label: 'Sites' },
+  { path: '/add-site',  icon: '＋',  label: 'Add' },
+  { path: '/alerts',    icon: '🔔',  label: 'Alerts' },
+  { path: '/profile',   icon: '👤',  label: 'Profile' },
 ];
 
 export default function BottomNav() {
@@ -28,13 +29,13 @@ export default function BottomNav() {
             style={{
               flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
               justifyContent: 'center', padding: '10px 0', background: 'none', border: 'none',
-              cursor: 'pointer', gap: 4,
+              cursor: 'pointer', gap: 3,
             }}>
             {isAdd ? (
               <div style={{
-                width: 44, height: 44, borderRadius: '50%', background: '#7c3aed',
+                width: 42, height: 42, borderRadius: '50%', background: '#7c3aed',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 22, color: '#fff', marginTop: -20,
+                fontSize: 22, color: '#fff', marginTop: -18,
                 boxShadow: '0 4px 16px #7c3aed66',
               }}>{t.icon}</div>
             ) : (

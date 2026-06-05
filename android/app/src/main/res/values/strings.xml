@@ -4,4 +4,5 @@
     <string name="title_activity_main">UptimeForge</string>
     <string name="package_name">site.narendrasingh.uptimeforge</string>
     <string name="custom_url_scheme">site.narendrasingh.uptimeforge</string>
+    <string name="server_client_id">948267737652-md7c4vukpn7ruf1knmatva7dgi0r71ra.apps.googleusercontent.com</string>
 </resources>
