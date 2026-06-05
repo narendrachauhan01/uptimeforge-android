@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import api from './api/axios';
 import BottomNav from './components/BottomNav';
+import Splash from './pages/Splash';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import CompleteProfile from './pages/CompleteProfile';
@@ -44,6 +45,7 @@ export default function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState(null);
+  const [showSplash, setShowSplash] = useState(true);
 
   const showToast = useCallback((msg, type = 'success') => {
     setToast({ msg, type });
@@ -72,6 +74,7 @@ export default function App() {
 
   return (
     <AuthCtx.Provider value={{ user, setUser, loading, fetchUser, showToast }}>
+      {showSplash && <Splash onDone={() => setShowSplash(false)} />}
       <BrowserRouter>
         {toast && <Toast msg={toast.msg} type={toast.type} />}
         <Layout>
