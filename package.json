@@ -10,7 +10,7 @@
     "cap:build": "npm run build && npx cap sync android"
   },
   "dependencies": {
-    "@capacitor-community/google-auth": "^3.4.0",
+    "@codetrix-studio/capacitor-google-auth": "^3.3.6",
     "@capacitor/android": "^8.4.0",
     "@capacitor/cli": "^8.4.0",
     "@capacitor/core": "^8.4.0",

@@ -5,7 +5,7 @@ import { useAuth } from '../App';
 
 async function googleSignIn() {
   try {
-    const { GoogleAuth } = await import('@capacitor-community/google-auth');
+    const { GoogleAuth } = await import('@codetrix-studio/capacitor-google-auth');
     await GoogleAuth.initialize();
     const result = await GoogleAuth.signIn();
     return result?.authentication?.idToken || null;
