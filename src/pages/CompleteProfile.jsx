@@ -23,7 +23,9 @@ export default function CompleteProfile() {
 
   const submit = async e => {
     e.preventDefault();
-    if (!form.phone.trim()) return showToast('Phone is required', 'error');
+    const digits = form.phone.replace(/\D/g, '');
+    if (!form.phone.trim()) return showToast('Phone number is required', 'error');
+    if (digits.length < 10) return showToast('Phone must be 10 digits', 'error');
     if (!form.city.trim()) return showToast('City is required', 'error');
     if (!form.gender) return showToast('Gender is required', 'error');
     if (!form.pincode.trim()) return showToast('PIN Code is required', 'error');
@@ -60,9 +62,11 @@ export default function CompleteProfile() {
 
       <form onSubmit={submit}>
         <div className="input-group">
-          <label className="input-label">Mobile Number *</label>
-          <input className="input" type="tel" placeholder="+91 9876543210"
-            value={form.phone} onChange={set('phone')} inputMode="tel" />
+          <label className="input-label">Mobile Number * (10 digits)</label>
+          <input className="input" type="tel" placeholder="9876543210"
+            value={form.phone}
+            onChange={e => setForm(f => ({ ...f, phone: e.target.value.replace(/\D/g, '').slice(0, 10) }))}
+            inputMode="numeric" maxLength={10} />
         </div>
         <div className="input-group">
           <label className="input-label">City *</label>
