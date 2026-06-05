@@ -14,6 +14,7 @@ export default function CompleteProfile() {
     gender: user?.gender || '',
     country: user?.country || 'India',
     state: user?.state || '',
+    pincode: user?.pincode || '',
     purpose: user?.purpose || '',
   });
   const [loading, setLoading] = useState(false);
@@ -22,9 +23,10 @@ export default function CompleteProfile() {
 
   const submit = async e => {
     e.preventDefault();
+    if (!form.phone.trim()) return showToast('Phone is required', 'error');
     if (!form.city.trim()) return showToast('City is required', 'error');
     if (!form.gender) return showToast('Gender is required', 'error');
-    if (!form.phone.trim()) return showToast('Phone is required', 'error');
+    if (!form.pincode.trim()) return showToast('PIN Code is required', 'error');
     if (!form.purpose) return showToast('Purpose is required', 'error');
 
     setLoading(true);
@@ -35,6 +37,7 @@ export default function CompleteProfile() {
         gender: form.gender,
         country: form.country,
         state: form.state.trim(),
+        pincode: form.pincode.trim(),
         purpose: form.purpose,
       });
       await fetchUser();
@@ -85,6 +88,11 @@ export default function CompleteProfile() {
           <label className="input-label">State / Province</label>
           <input className="input" placeholder="Maharashtra"
             value={form.state} onChange={set('state')} />
+        </div>
+        <div className="input-group">
+          <label className="input-label">PIN Code *</label>
+          <input className="input" type="text" inputMode="numeric" placeholder="400001"
+            value={form.pincode} onChange={set('pincode')} maxLength={10} />
         </div>
         <div className="input-group">
           <label className="input-label">Account Purpose *</label>
