@@ -46,7 +46,7 @@ jobs:
 
       - name: Print debug keystore SHA-1 (for Google Sign-In setup)
         run: |
-          KEYSTORE="/home/runner/.config/.android/debug.keystore"
+          KEYSTORE="android/app/debug.keystore"
           echo "============================================"
           echo "  DEBUG KEYSTORE SHA-1 (for Google Console)"
           echo "============================================"
