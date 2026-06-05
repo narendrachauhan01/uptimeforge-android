@@ -3,8 +3,8 @@
   "appName": "UptimeForge",
   "webDir": "www",
   "server": {
-    "url": "https://servermonitor.narendrasingh.site",
-    "cleartext": false
+    "androidScheme": "https",
+    "hostname": "servermonitor.narendrasingh.site"
   },
   "android": {
     "allowMixedContent": false,

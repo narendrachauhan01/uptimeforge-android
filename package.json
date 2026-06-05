@@ -1,18 +1,24 @@
 {
   "name": "uptimeforge-android",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "private": true,
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "vite",
+    "build": "vite build",
+    "cap:sync": "npx cap sync android",
+    "cap:build": "npm run build && npx cap sync android"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
     "@capacitor/android": "^8.4.0",
     "@capacitor/cli": "^8.4.0",
-    "@capacitor/core": "^8.4.0"
+    "@capacitor/core": "^8.4.0",
+    "@vitejs/plugin-react": "^6.0.2",
+    "axios": "^1.17.0",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "react-router-dom": "^7.17.0",
+    "recharts": "^3.8.1",
+    "vite": "^8.0.16"
   }
 }
