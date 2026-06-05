@@ -31,11 +31,16 @@ export default function Login() {
       {/* Header */}
       <div style={{ padding: '60px 24px 32px', textAlign: 'center' }}>
         <div style={{
-          width: 72, height: 72, borderRadius: 20, background: '#7c3aed',
+          width: 80, height: 80, borderRadius: 22,
+          background: 'linear-gradient(135deg, #7c3aed, #5b21b6)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 36, margin: '0 auto 20px',
+          margin: '0 auto 20px',
           boxShadow: '0 8px 32px #7c3aed55',
-        }}>📡</div>
+          overflow: 'hidden',
+        }}>
+          <img src="/logo.png" alt="UptimeForge"
+            style={{ width: 58, height: 58, objectFit: 'contain' }} />
+        </div>
         <h1 style={{ fontSize: 26, fontWeight: 800, marginBottom: 6 }}>Welcome back</h1>
         <p style={{ color: '#8b7fb8', fontSize: 14 }}>Sign in to UptimeForge</p>
       </div>

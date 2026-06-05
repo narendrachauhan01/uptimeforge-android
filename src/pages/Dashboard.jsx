@@ -74,8 +74,29 @@ export default function Dashboard() {
   const planColors = { free_trial: '#6d28d9', bronze: '#92400e', silver: '#374151', gold: '#78350f' };
   const planBg = { free_trial: '#3b0764', bronze: '#451a03', silver: '#1f2937', gold: '#422006' };
 
+  const accountStatus = user?.accountStatus || 'active';
+
   return (
     <div className="page">
+      {/* Grace period banner */}
+      {accountStatus === 'grace' && (
+        <div style={{
+          background: 'linear-gradient(90deg, #92400e, #d97706)',
+          padding: '12px 16px',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          gap: 12,
+        }}>
+          <div>
+            <div style={{ fontWeight: 800, fontSize: 13, color: '#fff' }}>🔔 Subscription Expired — Grace Period</div>
+            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.85)', marginTop: 2 }}>Monitoring paused · Renew within 10 days</div>
+          </div>
+          <button onClick={() => nav('/plans')} style={{
+            background: '#fff', color: '#b45309', border: 'none',
+            borderRadius: 8, padding: '7px 14px', fontSize: 12, fontWeight: 800, cursor: 'pointer',
+          }}>Renew</button>
+        </div>
+      )}
+
       {/* Header */}
       <div style={{ padding: '52px 20px 16px', background: 'linear-gradient(180deg, #1a0a4e 0%, #0f0a1e 100%)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
