@@ -12,14 +12,14 @@ function InfoRow({ label, value }) {
   );
 }
 
-function MenuLink({ icon, label, badge, onClick, color }) {
+function MenuLink({ icon, label, badge, onClick, color, danger }) {
   return (
     <button onClick={onClick} style={{
       width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '15px 16px',
       background: 'none', border: 'none', borderBottom: '1px solid #2d1f6e', cursor: 'pointer', textAlign: 'left',
     }}>
-      <span style={{ fontSize: 20, width: 24, textAlign: 'center' }}>{icon}</span>
-      <span style={{ flex: 1, fontSize: 14, fontWeight: 600, color: color || '#e2d9f3' }}>{label}</span>
+      <span style={{ fontSize: 18, width: 24, textAlign: 'center' }}>{icon}</span>
+      <span style={{ flex: 1, fontSize: 14, fontWeight: 600, color: danger ? '#ef4444' : color || '#e2d9f3' }}>{label}</span>
       {badge && <span style={{ background: '#7c3aed', color: '#fff', borderRadius: 10, padding: '2px 8px', fontSize: 11, fontWeight: 700 }}>{badge}</span>}
       <span style={{ color: '#4a4070', fontSize: 16 }}>›</span>
     </button>
@@ -47,13 +47,13 @@ export default function Profile() {
   };
 
   const daysLeft = user?.trialDaysLeft;
-  const planEnd = user?.planEndsAt ? new Date(user.planEndsAt).toLocaleDateString('en-IN') : null;
+  const planEnd  = user?.planEndsAt ? new Date(user.planEndsAt).toLocaleDateString('en-IN') : null;
   const trialEnd = user?.trialEndsAt ? new Date(user.trialEndsAt).toLocaleDateString('en-IN') : null;
 
   return (
     <div className="page">
       {/* Header */}
-      <div style={{ padding: '52px 20px 24px', background: 'linear-gradient(180deg, #1a0a4e 0%, #0f0a1e 100%)', textAlign: 'center' }}>
+      <div style={{ padding: '52px 20px 24px', background: 'linear-gradient(180deg,#1a0a4e 0%,#0f0a1e 100%)', textAlign: 'center' }}>
         <div style={{
           width: 72, height: 72, borderRadius: '50%', background: '#7c3aed',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -71,8 +71,8 @@ export default function Profile() {
       </div>
 
       <div style={{ padding: '16px 20px' }}>
-        {/* Account info */}
-        <div style={{ background: '#1e1350', borderRadius: 14, border: '1px solid #2d1f6e', marginBottom: 16, overflow: 'hidden' }}>
+        {/* Account Info */}
+        <div style={{ background: '#1e1350', borderRadius: 14, border: '1px solid #2d1f6e', marginBottom: 14, overflow: 'hidden' }}>
           <div style={{ padding: '12px 16px', borderBottom: '1px solid #2d1f6e' }}>
             <div className="section-title" style={{ margin: 0 }}>Account Details</div>
           </div>
@@ -80,35 +80,54 @@ export default function Profile() {
           <InfoRow label="Phone" value={user?.phone} />
           <InfoRow label="City" value={user?.city} />
           <InfoRow label="Country" value={user?.country} />
-          <InfoRow label="PIN Code" value={user?.pincode} />
           <InfoRow label="Gender" value={user?.gender ? user.gender.charAt(0).toUpperCase() + user.gender.slice(1) : null} />
           <InfoRow label="Purpose" value={user?.purpose ? user.purpose.charAt(0).toUpperCase() + user.purpose.slice(1) : null} />
         </div>
 
-        {/* Plan info */}
-        <div style={{ background: '#1e1350', borderRadius: 14, border: '1px solid #2d1f6e', marginBottom: 16, overflow: 'hidden' }}>
+        {/* Plan Info */}
+        <div style={{ background: '#1e1350', borderRadius: 14, border: '1px solid #2d1f6e', marginBottom: 14, overflow: 'hidden' }}>
           <div style={{ padding: '12px 16px', borderBottom: '1px solid #2d1f6e' }}>
             <div className="section-title" style={{ margin: 0 }}>Plan Details</div>
           </div>
           <InfoRow label="Current Plan" value={plan.label} />
-          <InfoRow label="Status" value={user?.accountStatus?.charAt(0).toUpperCase() + user?.accountStatus?.slice(1)} />
+          <InfoRow label="Status" value={user?.accountStatus ? user.accountStatus.charAt(0).toUpperCase() + user.accountStatus.slice(1) : 'Active'} />
           {user?.plan === 'free_trial'
-            ? <InfoRow label="Trial Ends" value={trialEnd ? `${trialEnd} (${daysLeft}d left)` : null} />
+            ? <InfoRow label="Trial Ends" value={trialEnd ? `${trialEnd}${daysLeft != null ? ` (${daysLeft}d left)` : ''}` : null} />
             : <InfoRow label="Plan Ends" value={planEnd} />}
           <InfoRow label="Site Limit" value={user?.siteLimit} />
+          <InfoRow label="Billing" value={user?.billing ? user.billing.charAt(0).toUpperCase() + user.billing.slice(1) : null} />
         </div>
 
-        {/* Quick links */}
-        <div style={{ background: '#1e1350', borderRadius: 14, border: '1px solid #2d1f6e', marginBottom: 16, overflow: 'hidden' }}>
+        {/* Monitoring Tools */}
+        <div style={{ background: '#1e1350', borderRadius: 14, border: '1px solid #2d1f6e', marginBottom: 14, overflow: 'hidden' }}>
           <div style={{ padding: '12px 16px', borderBottom: '1px solid #2d1f6e' }}>
-            <div className="section-title" style={{ margin: 0 }}>Manage</div>
+            <div className="section-title" style={{ margin: 0 }}>Monitoring</div>
           </div>
-          <MenuLink icon="✏️" label="Edit Profile" onClick={() => nav('/edit-profile')} />
-          <MenuLink icon="👥" label="Recipients" onClick={() => nav('/recipients')} />
+          <MenuLink icon="📊" label="Performance Charts" onClick={() => nav('/performance')} />
+          <MenuLink icon="🔒" label="SSL & Domain Monitor" onClick={() => nav('/domain-ssl')} />
           <MenuLink icon="🏓" label="Ping Monitor" onClick={() => nav('/ping-monitor')} />
-          <MenuLink icon="🔗" label="Integrations" onClick={() => nav('/integrations')} />
-          <MenuLink icon="📩" label="Support" onClick={() => nav('/support')} />
-          <MenuLink icon="⚡" label="Upgrade Plan" onClick={() => nav('/plans')} />
+          <MenuLink icon="🔔" label="Notifications" onClick={() => nav('/notifications')} />
+        </div>
+
+        {/* Settings & Account */}
+        <div style={{ background: '#1e1350', borderRadius: 14, border: '1px solid #2d1f6e', marginBottom: 14, overflow: 'hidden' }}>
+          <div style={{ padding: '12px 16px', borderBottom: '1px solid #2d1f6e' }}>
+            <div className="section-title" style={{ margin: 0 }}>Settings</div>
+          </div>
+          <MenuLink icon="✏️"  label="Edit Profile"      onClick={() => nav('/edit-profile')} />
+          <MenuLink icon="🔑"  label="Change Password"   onClick={() => nav('/change-password')} />
+          <MenuLink icon="👥"  label="Recipients"        onClick={() => nav('/recipients')} />
+          <MenuLink icon="🔗"  label="Integrations"      onClick={() => nav('/integrations')} />
+          <MenuLink icon="📩"  label="Support"           onClick={() => nav('/support')} />
+        </div>
+
+        {/* Billing */}
+        <div style={{ background: '#1e1350', borderRadius: 14, border: '1px solid #2d1f6e', marginBottom: 14, overflow: 'hidden' }}>
+          <div style={{ padding: '12px 16px', borderBottom: '1px solid #2d1f6e' }}>
+            <div className="section-title" style={{ margin: 0 }}>Billing</div>
+          </div>
+          <MenuLink icon="⚡"  label="Upgrade Plan"      onClick={() => nav('/plans')} />
+          <MenuLink icon="🧾"  label="Payment History"   onClick={() => nav('/payment-history')} />
         </div>
 
         {/* Logout */}
@@ -116,8 +135,8 @@ export default function Profile() {
           {loggingOut ? '⏳ Logging out...' : '🚪 Logout'}
         </button>
 
-        <p style={{ textAlign: 'center', marginTop: 24, color: '#4a4070', fontSize: 12 }}>
-          UptimeForge v1.0 · {user?.accountId}
+        <p style={{ textAlign: 'center', marginTop: 20, color: '#4a4070', fontSize: 12 }}>
+          UptimeForge · {user?.accountId}
         </p>
       </div>
     </div>

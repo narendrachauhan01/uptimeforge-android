@@ -2,6 +2,25 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 
+function UptimeBar({ history = [] }) {
+  const SLOTS = 25;
+  const padded = history.length >= SLOTS ? history.slice(-SLOTS) : [
+    ...Array(SLOTS - history.length).fill({ status: 'empty' }),
+    ...history,
+  ];
+  return (
+    <div style={{ display: 'flex', gap: 1.5 }}>
+      {padded.map((h, i) => (
+        <div key={i} style={{
+          width: 5, height: 18, borderRadius: 2,
+          background: h.status === 'up' ? '#10b981' : h.status === 'down' ? '#ef4444' : '#2d1f6e',
+          opacity: h.status === 'empty' ? 0.3 : 0.85,
+        }} />
+      ))}
+    </div>
+  );
+}
+
 export default function Sites() {
   const nav = useNavigate();
   const [sites, setSites] = useState([]);
@@ -10,8 +29,8 @@ export default function Sites() {
 
   const load = useCallback(async () => {
     try {
-      const { data } = await api.get('/api/sites');
-      setSites(data.sites || []);
+      const { data } = await api.get('/api/servers');
+      setSites(Array.isArray(data) ? data : []);
     } catch {} finally { setLoading(false); }
   }, []);
 
@@ -21,26 +40,23 @@ export default function Sites() {
     return () => clearInterval(id);
   }, [load]);
 
-  const filters = ['all', 'up', 'down', 'paused'];
+  const filters = ['all', 'up', 'down'];
   const filtered = filter === 'all' ? sites : sites.filter(s => s.status === filter);
 
   return (
     <div className="page">
-      {/* Header */}
-      <div style={{ padding: '52px 20px 16px', background: 'linear-gradient(180deg, #1a0a4e 0%, #0f0a1e 100%)' }}>
+      <div style={{ padding: '52px 20px 16px', background: 'linear-gradient(180deg,#1a0a4e 0%,#0f0a1e 100%)' }}>
         <h1 style={{ fontSize: 22, fontWeight: 800 }}>Monitored Sites</h1>
         <p style={{ color: '#8b7fb8', fontSize: 13, marginTop: 4 }}>{sites.length} site{sites.length !== 1 ? 's' : ''} total</p>
       </div>
 
-      {/* Filter tabs */}
       <div style={{ display: 'flex', gap: 8, padding: '12px 20px', overflowX: 'auto' }}>
         {filters.map(f => (
           <button key={f} onClick={() => setFilter(f)} style={{
-            padding: '7px 16px', borderRadius: 20, border: 'none', cursor: 'pointer',
+            padding: '7px 16px', borderRadius: 20, border: filter === f ? 'none' : '1px solid #2d1f6e', cursor: 'pointer',
             background: filter === f ? '#7c3aed' : '#1e1350',
             color: filter === f ? '#fff' : '#8b7fb8',
             fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap',
-            border: filter === f ? 'none' : '1px solid #2d1f6e',
           }}>
             {f.charAt(0).toUpperCase() + f.slice(1)}
             {f !== 'all' && ` (${sites.filter(s => s.status === f).length})`}
@@ -63,11 +79,11 @@ export default function Sites() {
         ) : filtered.map(site => (
           <div key={site._id} onClick={() => nav(`/sites/${site._id}`)} style={{
             background: '#1e1350', borderRadius: 14, padding: '16px',
-            border: '1px solid #2d1f6e', marginBottom: 10, cursor: 'pointer',
+            border: `1px solid ${site.status === 'down' ? '#7f1d1d88' : '#2d1f6e'}`,
+            marginBottom: 10, cursor: 'pointer',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-              <div className={`dot dot-${site.status === 'up' ? 'up' : site.status === 'down' ? 'down' : 'paused'}`}
-                style={{ width: 10, height: 10, flexShrink: 0 }} />
+              <div className={`dot dot-${site.status === 'up' ? 'up' : site.status === 'down' ? 'down' : 'paused'}`} style={{ width: 10, height: 10, flexShrink: 0 }} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 15, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {site.name || site.url}
@@ -81,27 +97,30 @@ export default function Sites() {
               </span>
             </div>
 
-            <div style={{ display: 'flex', gap: 16 }}>
-              {site.uptimePercentage !== undefined && (
-                <div>
-                  <div style={{ fontSize: 11, color: '#8b7fb8', marginBottom: 2 }}>Uptime</div>
-                  <div style={{ fontSize: 15, fontWeight: 700, color: site.uptimePercentage >= 99 ? '#10b981' : '#f59e0b' }}>
-                    {site.uptimePercentage?.toFixed(2)}%
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+              <div style={{ display: 'flex', gap: 16 }}>
+                {site.uptime24h !== null && site.uptime24h !== undefined && (
+                  <div>
+                    <div style={{ fontSize: 11, color: '#8b7fb8', marginBottom: 2 }}>Uptime</div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: site.uptime24h >= 99 ? '#10b981' : '#f59e0b' }}>
+                      {site.uptime24h?.toFixed(1)}%
+                    </div>
                   </div>
-                </div>
-              )}
-              {site.responseTime && (
-                <div>
-                  <div style={{ fontSize: 11, color: '#8b7fb8', marginBottom: 2 }}>Response</div>
-                  <div style={{ fontSize: 15, fontWeight: 700 }}>{site.responseTime}ms</div>
-                </div>
-              )}
-              {site.interval && (
-                <div>
-                  <div style={{ fontSize: 11, color: '#8b7fb8', marginBottom: 2 }}>Check every</div>
-                  <div style={{ fontSize: 15, fontWeight: 700 }}>{site.interval}s</div>
-                </div>
-              )}
+                )}
+                {site.responseTime && (
+                  <div>
+                    <div style={{ fontSize: 11, color: '#8b7fb8', marginBottom: 2 }}>Response</div>
+                    <div style={{ fontSize: 14, fontWeight: 700 }}>{site.responseTime}ms</div>
+                  </div>
+                )}
+                {site.checkInterval && (
+                  <div>
+                    <div style={{ fontSize: 11, color: '#8b7fb8', marginBottom: 2 }}>Interval</div>
+                    <div style={{ fontSize: 14, fontWeight: 700 }}>{site.checkInterval}s</div>
+                  </div>
+                )}
+              </div>
+              <UptimeBar history={site.historyBar || []} />
             </div>
           </div>
         ))}

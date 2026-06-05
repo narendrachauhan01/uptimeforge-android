@@ -17,6 +17,11 @@ import PingMonitor from './pages/PingMonitor';
 import Integrations from './pages/Integrations';
 import Support from './pages/Support';
 import Recipients from './pages/Recipients';
+import Performance from './pages/Performance';
+import DomainSSL from './pages/DomainSSL';
+import Notifications from './pages/Notifications';
+import ChangePassword from './pages/ChangePassword';
+import PaymentHistory from './pages/PaymentHistory';
 import Toast from './components/Toast';
 
 const AuthCtx = createContext(null);
@@ -54,7 +59,7 @@ function SuspendedScreen() {
     }}>
       <div style={{
         width: 72, height: 72, borderRadius: 20,
-        background: 'linear-gradient(135deg, #7c3aed, #5b21b6)',
+        background: 'linear-gradient(135deg,#7c3aed,#5b21b6)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         margin: '0 auto 20px', overflow: 'hidden',
       }}>
@@ -93,7 +98,6 @@ function Guard({ children }) {
   const accountStatus = user.accountStatus || 'active';
   if (accountStatus === 'suspended') return <SuspendedScreen />;
 
-  // Always require profile completion regardless of plan status
   const needsProfile = !user.city || !user.gender || !user.phone;
   if (needsProfile && loc.pathname !== '/complete-profile') return <Navigate to="/complete-profile" replace />;
   return children;
@@ -114,6 +118,7 @@ export default function App() {
     try {
       const { data } = await api.get('/api/users/me');
       setUser(data.user);
+      return data.user;
     } catch {
       setUser(null);
     } finally {
@@ -123,14 +128,12 @@ export default function App() {
 
   useEffect(() => { fetchUser(); }, [fetchUser]);
 
-  // Auto-refresh user every 5 min
   useEffect(() => {
     if (!user) return;
     const id = setInterval(fetchUser, 5 * 60 * 1000);
     return () => clearInterval(id);
   }, [user, fetchUser]);
 
-  // Android hardware back button
   useEffect(() => {
     const handler = e => {
       if (window.history.length > 1) {
@@ -152,18 +155,23 @@ export default function App() {
             <Route path="/login"    element={user ? <Navigate to="/dashboard" /> : <Login />} />
             <Route path="/register" element={user ? <Navigate to="/dashboard" /> : <Register />} />
             <Route path="/complete-profile" element={<Guard><CompleteProfile /></Guard>} />
-            <Route path="/dashboard"  element={<Guard><Dashboard /></Guard>} />
-            <Route path="/sites"      element={<Guard><Sites /></Guard>} />
-            <Route path="/add-site"   element={<Guard><AddSite /></Guard>} />
-            <Route path="/sites/:id"  element={<Guard><SiteDetail /></Guard>} />
-            <Route path="/alerts"     element={<Guard><Alerts /></Guard>} />
-            <Route path="/ping-monitor"  element={<Guard><PingMonitor /></Guard>} />
-            <Route path="/integrations"  element={<Guard><Integrations /></Guard>} />
-            <Route path="/support"       element={<Guard><Support /></Guard>} />
-            <Route path="/recipients"    element={<Guard><Recipients /></Guard>} />
-            <Route path="/edit-profile"  element={<Guard><CompleteProfile /></Guard>} />
-            <Route path="/profile"    element={<Guard><Profile /></Guard>} />
-            <Route path="/plans"      element={<Guard><Plans /></Guard>} />
+            <Route path="/dashboard"        element={<Guard><Dashboard /></Guard>} />
+            <Route path="/sites"            element={<Guard><Sites /></Guard>} />
+            <Route path="/add-site"         element={<Guard><AddSite /></Guard>} />
+            <Route path="/sites/:id"        element={<Guard><SiteDetail /></Guard>} />
+            <Route path="/alerts"           element={<Guard><Alerts /></Guard>} />
+            <Route path="/ping-monitor"     element={<Guard><PingMonitor /></Guard>} />
+            <Route path="/integrations"     element={<Guard><Integrations /></Guard>} />
+            <Route path="/support"          element={<Guard><Support /></Guard>} />
+            <Route path="/edit-profile"     element={<Guard><CompleteProfile /></Guard>} />
+            <Route path="/profile"          element={<Guard><Profile /></Guard>} />
+            <Route path="/plans"            element={<Guard><Plans /></Guard>} />
+            <Route path="/recipients"       element={<Guard><Recipients /></Guard>} />
+            <Route path="/performance"      element={<Guard><Performance /></Guard>} />
+            <Route path="/domain-ssl"       element={<Guard><DomainSSL /></Guard>} />
+            <Route path="/notifications"    element={<Guard><Notifications /></Guard>} />
+            <Route path="/change-password"  element={<Guard><ChangePassword /></Guard>} />
+            <Route path="/payment-history"  element={<Guard><PaymentHistory /></Guard>} />
             <Route path="*" element={<Navigate to={user ? '/dashboard' : '/login'} />} />
           </Routes>
         </Layout>

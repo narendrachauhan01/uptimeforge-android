@@ -23,7 +23,7 @@ export default function AddSite() {
     if (!url.startsWith('http')) url = 'https://' + url;
     setLoading(true);
     try {
-      await api.post('/api/sites', { ...form, url, interval: Number(form.interval) });
+      await api.post('/api/servers', { ...form, url, checkInterval: Number(form.interval) });
       showToast('Site added!');
       nav('/sites');
     } catch (err) {
