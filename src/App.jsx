@@ -22,6 +22,7 @@ import DomainSSL from './pages/DomainSSL';
 import Notifications from './pages/Notifications';
 import ChangePassword from './pages/ChangePassword';
 import PaymentHistory from './pages/PaymentHistory';
+import ForgotPassword from './pages/ForgotPassword';
 import Toast from './components/Toast';
 
 const AuthCtx = createContext(null);
@@ -152,8 +153,9 @@ export default function App() {
         {toast && <Toast msg={toast.msg} type={toast.type} />}
         <Layout>
           <Routes>
-            <Route path="/login"    element={user ? <Navigate to="/dashboard" /> : <Login />} />
-            <Route path="/register" element={user ? <Navigate to="/dashboard" /> : <Register />} />
+            <Route path="/login"            element={user ? <Navigate to="/dashboard" /> : <Login />} />
+            <Route path="/register"         element={user ? <Navigate to="/dashboard" /> : <Register />} />
+            <Route path="/forgot-password"  element={user ? <Navigate to="/dashboard" /> : <ForgotPassword />} />
             <Route path="/complete-profile" element={<Guard><CompleteProfile /></Guard>} />
             <Route path="/dashboard"        element={<Guard><Dashboard /></Guard>} />
             <Route path="/sites"            element={<Guard><Sites /></Guard>} />

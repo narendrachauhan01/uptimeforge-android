@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { useAuth } from '../App';
@@ -30,6 +30,10 @@ export default function Profile() {
   const { user, setUser, showToast } = useAuth();
   const nav = useNavigate();
   const [loggingOut, setLoggingOut] = useState(false);
+  const [referral, setReferral] = useState(null);
+  const [copied, setCopied] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const planInfo = {
     free_trial: { label: 'Free Trial', color: '#c084fc', bg: '#3b0764' },
@@ -39,6 +43,10 @@ export default function Profile() {
   };
   const plan = planInfo[user?.plan] || planInfo.free_trial;
 
+  useEffect(() => {
+    api.get('/api/users/referral-stats').then(({ data }) => setReferral(data)).catch(() => {});
+  }, []);
+
   const logout = async () => {
     setLoggingOut(true);
     try { await api.post('/api/users/logout'); } catch {}
@@ -46,8 +54,31 @@ export default function Profile() {
     nav('/login');
   };
 
+  const copyReferral = () => {
+    const code = user?.accountId || '';
+    const text = `Join UptimeForge with my referral code: ${code}\nhttps://servermonitor.narendrasingh.site/register?ref=${code}`;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); }).catch(() => {});
+    } else {
+      const el = document.createElement('textarea');
+      el.value = text; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el);
+      setCopied(true); setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const requestDelete = async () => {
+    setDeleting(true);
+    try {
+      await api.post('/api/users/request-delete');
+      showToast('Deletion email sent — check your inbox');
+      setShowDeleteConfirm(false);
+    } catch (err) {
+      showToast(err.response?.data?.error || 'Failed to send deletion email', 'error');
+    } finally { setDeleting(false); }
+  };
+
   const daysLeft = user?.trialDaysLeft;
-  const planEnd  = user?.planEndsAt ? new Date(user.planEndsAt).toLocaleDateString('en-IN') : null;
+  const planEnd  = user?.planEndsAt  ? new Date(user.planEndsAt).toLocaleDateString('en-IN')  : null;
   const trialEnd = user?.trialEndsAt ? new Date(user.trialEndsAt).toLocaleDateString('en-IN') : null;
 
   return (
@@ -98,6 +129,41 @@ export default function Profile() {
           <InfoRow label="Billing" value={user?.billing ? user.billing.charAt(0).toUpperCase() + user.billing.slice(1) : null} />
         </div>
 
+        {/* Referral */}
+        <div style={{ background: '#1e1350', borderRadius: 14, border: '1px solid #2d1f6e', marginBottom: 14, overflow: 'hidden' }}>
+          <div style={{ padding: '12px 16px', borderBottom: '1px solid #2d1f6e' }}>
+            <div className="section-title" style={{ margin: 0 }}>Refer & Earn</div>
+          </div>
+          <div style={{ padding: '14px 16px' }}>
+            <p style={{ fontSize: 13, color: '#8b7fb8', marginBottom: 10 }}>
+              Invite friends to UptimeForge. Earn bonus when they upgrade!
+            </p>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+              <div style={{ flex: 1, background: '#0f0a1e', borderRadius: 10, padding: '10px 12px', border: '1px solid #2d1f6e', fontFamily: 'monospace', fontSize: 14, fontWeight: 800, color: '#a78bfa', letterSpacing: 2 }}>
+                {user?.accountId || '...'}
+              </div>
+              <button onClick={copyReferral} style={{
+                background: copied ? '#10b981' : '#7c3aed', border: 'none', borderRadius: 10,
+                color: '#fff', padding: '0 14px', fontSize: 13, fontWeight: 700, cursor: 'pointer', flexShrink: 0,
+              }}>
+                {copied ? '✓ Copied' : '📋 Copy'}
+              </button>
+            </div>
+            {referral && (
+              <div style={{ display: 'flex', gap: 10 }}>
+                <div style={{ flex: 1, background: '#0f0a1e', borderRadius: 10, padding: '10px 12px', border: '1px solid #2d1f6e', textAlign: 'center' }}>
+                  <div style={{ fontSize: 20, fontWeight: 800, color: '#a78bfa' }}>{referral.total}</div>
+                  <div style={{ fontSize: 11, color: '#8b7fb8' }}>Referred</div>
+                </div>
+                <div style={{ flex: 1, background: '#0f0a1e', borderRadius: 10, padding: '10px 12px', border: '1px solid #2d1f6e', textAlign: 'center' }}>
+                  <div style={{ fontSize: 20, fontWeight: 800, color: '#10b981' }}>{referral.paid}</div>
+                  <div style={{ fontSize: 11, color: '#8b7fb8' }}>Converted</div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Monitoring Tools */}
         <div style={{ background: '#1e1350', borderRadius: 14, border: '1px solid #2d1f6e', marginBottom: 14, overflow: 'hidden' }}>
           <div style={{ padding: '12px 16px', borderBottom: '1px solid #2d1f6e' }}>
@@ -131,11 +197,34 @@ export default function Profile() {
         </div>
 
         {/* Logout */}
-        <button className="btn btn-danger" onClick={logout} disabled={loggingOut}>
+        <button className="btn btn-danger" onClick={logout} disabled={loggingOut} style={{ marginBottom: 12 }}>
           {loggingOut ? '⏳ Logging out...' : '🚪 Logout'}
         </button>
 
-        <p style={{ textAlign: 'center', marginTop: 20, color: '#4a4070', fontSize: 12 }}>
+        {/* Delete Account */}
+        {!showDeleteConfirm ? (
+          <button onClick={() => setShowDeleteConfirm(true)} style={{
+            width: '100%', background: 'none', border: '1px solid #ef444444', color: '#ef4444',
+            borderRadius: 12, padding: '12px', fontSize: 13, fontWeight: 600, cursor: 'pointer', marginBottom: 20,
+          }}>
+            Delete Account
+          </button>
+        ) : (
+          <div style={{ background: '#7f1d1d22', borderRadius: 14, padding: '16px', border: '1px solid #7f1d1d44', marginBottom: 20 }}>
+            <p style={{ color: '#ef4444', fontSize: 13, fontWeight: 600, marginBottom: 6 }}>⚠️ Delete your account?</p>
+            <p style={{ color: '#8b7fb8', fontSize: 12, lineHeight: 1.6, marginBottom: 12 }}>
+              This is permanent. A confirmation link will be sent to your email. All data will be deleted.
+            </p>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button className="btn btn-secondary" onClick={() => setShowDeleteConfirm(false)} style={{ flex: 1, fontSize: 13 }}>Cancel</button>
+              <button className="btn btn-danger" onClick={requestDelete} disabled={deleting} style={{ flex: 1, fontSize: 13 }}>
+                {deleting ? 'Sending...' : 'Send Email'}
+              </button>
+            </div>
+          </div>
+        )}
+
+        <p style={{ textAlign: 'center', color: '#4a4070', fontSize: 12 }}>
           UptimeForge · {user?.accountId}
         </p>
       </div>

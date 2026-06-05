@@ -13,6 +13,11 @@ export default function SiteDetail() {
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [editForm, setEditForm] = useState({
+    name: '', alertEmail: false, alertWhatsapp: false, alertWebhook: false, webhookUrl: '',
+  });
 
   const load = useCallback(async () => {
     try {
@@ -31,6 +36,37 @@ export default function SiteDetail() {
     const t = setInterval(load, 30000);
     return () => clearInterval(t);
   }, [load]);
+
+  const openEdit = () => {
+    setEditForm({
+      name: site.name || '',
+      alertEmail: !!site.alertEmail,
+      alertWhatsapp: !!site.alertWhatsapp,
+      alertWebhook: !!site.alertWebhook,
+      webhookUrl: site.webhookUrl || '',
+    });
+    setEditing(true);
+  };
+
+  const saveEdit = async () => {
+    if (!editForm.name.trim()) return showToast('Name is required', 'error');
+    setSaving(true);
+    try {
+      const payload = {
+        name: editForm.name.trim(),
+        alertEmail: editForm.alertEmail,
+        alertWhatsapp: editForm.alertWhatsapp,
+        alertWebhook: editForm.alertWebhook,
+      };
+      if (editForm.alertWebhook) payload.webhookUrl = editForm.webhookUrl.trim();
+      const { data } = await api.put(`/api/servers/${id}`, payload);
+      setSite(data);
+      setEditing(false);
+      showToast('Site updated!');
+    } catch (err) {
+      showToast(err.response?.data?.error || 'Failed to save', 'error');
+    } finally { setSaving(false); }
+  };
 
   const deleteSite = async () => {
     setDeleting(true);
@@ -52,10 +88,10 @@ export default function SiteDetail() {
     time: h.time ? new Date(h.time).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : '',
   }));
 
-  const sslDays = site.sslDaysLeft ?? null;
+  const sslDays    = site.sslDaysLeft ?? null;
   const domainDays = site.domainExpiry ? Math.floor((new Date(site.domainExpiry) - Date.now()) / 86400000) : null;
-  const sslColor = sslDays === null ? '#6b7280' : sslDays <= 7 ? '#ef4444' : sslDays <= 30 ? '#f59e0b' : '#10b981';
-  const domColor = domainDays === null ? '#6b7280' : domainDays <= 30 ? '#ef4444' : domainDays <= 60 ? '#f59e0b' : '#10b981';
+  const sslColor   = sslDays === null ? '#6b7280' : sslDays <= 7 ? '#ef4444' : sslDays <= 30 ? '#f59e0b' : '#10b981';
+  const domColor   = domainDays === null ? '#6b7280' : domainDays <= 30 ? '#ef4444' : domainDays <= 60 ? '#f59e0b' : '#10b981';
 
   return (
     <div className="page">
@@ -71,13 +107,70 @@ export default function SiteDetail() {
             <h1 style={{ fontSize: 20, fontWeight: 800, marginBottom: 4 }}>{site.name || 'Untitled'}</h1>
             <p style={{ color: '#8b7fb8', fontSize: 13, wordBreak: 'break-all' }}>{site.url}</p>
           </div>
-          <span className={`badge badge-${isUp ? 'up' : isDown ? 'down' : 'paused'}`} style={{ marginLeft: 12, flexShrink: 0, fontSize: 13 }}>
-            ● {site.status?.toUpperCase()}
-          </span>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8, marginLeft: 12, flexShrink: 0 }}>
+            <span className={`badge badge-${isUp ? 'up' : isDown ? 'down' : 'paused'}`} style={{ fontSize: 13 }}>
+              ● {site.status?.toUpperCase()}
+            </span>
+            <button onClick={openEdit} style={{ background: '#2d1f6e', border: '1px solid #4a3a8e', color: '#a78bfa', borderRadius: 8, padding: '4px 10px', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
+              ✏️ Edit
+            </button>
+          </div>
         </div>
       </div>
 
       <div style={{ padding: '16px 20px' }}>
+
+        {/* Edit Form */}
+        {editing && (
+          <div style={{ background: '#1e1350', borderRadius: 14, border: '1px solid #7c3aed44', padding: '16px', marginBottom: 16 }}>
+            <div className="section-title" style={{ marginBottom: 12 }}>Edit Site</div>
+
+            <div className="input-group">
+              <label className="input-label">Site Name</label>
+              <input className="input" value={editForm.name} placeholder="My Website"
+                onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))} />
+            </div>
+
+            <div style={{ marginBottom: 12 }}>
+              <label className="input-label">Alert Methods</label>
+              {[
+                { key: 'alertEmail',    label: '📧 Email alerts' },
+                { key: 'alertWhatsapp', label: '💬 WhatsApp alerts' },
+                { key: 'alertWebhook',  label: '🔗 Webhook alerts' },
+              ].map(({ key, label }) => (
+                <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: '1px solid #2d1f6e', cursor: 'pointer' }}>
+                  <div onClick={() => setEditForm(f => ({ ...f, [key]: !f[key] }))} style={{
+                    width: 42, height: 24, borderRadius: 12,
+                    background: editForm[key] ? '#7c3aed' : '#2d1f6e',
+                    position: 'relative', transition: 'background 0.2s', flexShrink: 0,
+                  }}>
+                    <div style={{
+                      position: 'absolute', top: 3, left: editForm[key] ? 20 : 3,
+                      width: 18, height: 18, borderRadius: '50%', background: '#fff', transition: 'left 0.2s',
+                    }} />
+                  </div>
+                  <span style={{ fontSize: 14, color: '#e2d9f3' }}>{label}</span>
+                </label>
+              ))}
+            </div>
+
+            {editForm.alertWebhook && (
+              <div className="input-group">
+                <label className="input-label">Webhook URL</label>
+                <input className="input" value={editForm.webhookUrl} placeholder="https://hooks.example.com/..."
+                  onChange={e => setEditForm(f => ({ ...f, webhookUrl: e.target.value }))} />
+              </div>
+            )}
+
+            <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
+              <button className="btn btn-secondary" onClick={() => setEditing(false)} style={{ flex: 1 }}>Cancel</button>
+              <button className="btn btn-primary" onClick={saveEdit} disabled={saving} style={{ flex: 1 }}>
+                {saving ? 'Saving...' : 'Save Changes'}
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Stats */}
         <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
           <div style={{ flex: 1, background: '#1e1350', borderRadius: 14, padding: '14px', border: '1px solid #2d1f6e', textAlign: 'center' }}>
@@ -150,7 +243,7 @@ export default function SiteDetail() {
             {site.alertWhatsapp && <span className="badge" style={{ background: '#064e3b', color: '#34d399' }}>💬 WhatsApp</span>}
             {site.alertWebhook  && <span className="badge" style={{ background: '#1e1350', color: '#a78bfa' }}>🔗 Webhook</span>}
             {!site.alertEmail && !site.alertWhatsapp && !site.alertWebhook &&
-              <span style={{ color: '#8b7fb8', fontSize: 13 }}>No alerts configured</span>}
+              <span style={{ color: '#8b7fb8', fontSize: 13 }}>No alerts configured — <button onClick={openEdit} style={{ background: 'none', border: 'none', color: '#a78bfa', cursor: 'pointer', fontSize: 13, padding: 0 }}>Edit to add</button></span>}
           </div>
         </div>
 
