@@ -16,6 +16,12 @@
       "scopes": ["profile", "email"],
       "serverClientId": "948267737652-md7c4vukpn7ruf1knmatva7dgi0r71ra.apps.googleusercontent.com",
       "forceCodeForRefreshToken": true
+    },
+    "CapacitorCookies": {
+      "enabled": true
+    },
+    "CapacitorHttp": {
+      "enabled": true
     }
   }
 }
