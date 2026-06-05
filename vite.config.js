@@ -8,5 +8,9 @@ export default defineConfig({
     outDir: 'www',
     emptyOutDir: true,
     sourcemap: false,
+    chunkSizeWarningLimit: 1000,
+    rolldownOptions: {
+      external: ['@codetrix-studio/capacitor-google-auth'],
+    },
   },
 });
