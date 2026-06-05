@@ -46,7 +46,17 @@ jobs:
 
       - name: Print debug keystore SHA-1 (for Google Sign-In setup)
         run: |
-          keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android 2>/dev/null | grep SHA1 || echo "SHA1 not found"
+          echo "=== Finding keystore ==="
+          find ~ -name "debug.keystore" 2>/dev/null || echo "keystore not found in home"
+          find /root -name "debug.keystore" 2>/dev/null || true
+          echo "=== SHA-1 Fingerprint ==="
+          keytool -list -v \
+            -keystore ~/.android/debug.keystore \
+            -alias androiddebugkey \
+            -storepass android \
+            -keypass android 2>&1 | grep -i "sha1\|sha-1\|fingerprint" | head -5
+          echo "=== From APK directly ==="
+          keytool -printcert -jarfile android/app/build/outputs/apk/debug/app-debug.apk 2>&1 | grep -i "sha1\|sha-1" | head -3 || true
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
