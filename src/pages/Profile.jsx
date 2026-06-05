@@ -104,6 +104,7 @@ export default function Profile() {
             <div className="section-title" style={{ margin: 0 }}>Manage</div>
           </div>
           <MenuLink icon="✏️" label="Edit Profile" onClick={() => nav('/edit-profile')} />
+          <MenuLink icon="👥" label="Recipients" onClick={() => nav('/recipients')} />
           <MenuLink icon="🏓" label="Ping Monitor" onClick={() => nav('/ping-monitor')} />
           <MenuLink icon="🔗" label="Integrations" onClick={() => nav('/integrations')} />
           <MenuLink icon="📩" label="Support" onClick={() => nav('/support')} />

@@ -16,6 +16,7 @@ import Alerts from './pages/Alerts';
 import PingMonitor from './pages/PingMonitor';
 import Integrations from './pages/Integrations';
 import Support from './pages/Support';
+import Recipients from './pages/Recipients';
 import Toast from './components/Toast';
 
 const AuthCtx = createContext(null);
@@ -159,6 +160,7 @@ export default function App() {
             <Route path="/ping-monitor"  element={<Guard><PingMonitor /></Guard>} />
             <Route path="/integrations"  element={<Guard><Integrations /></Guard>} />
             <Route path="/support"       element={<Guard><Support /></Guard>} />
+            <Route path="/recipients"    element={<Guard><Recipients /></Guard>} />
             <Route path="/edit-profile"  element={<Guard><CompleteProfile /></Guard>} />
             <Route path="/profile"    element={<Guard><Profile /></Guard>} />
             <Route path="/plans"      element={<Guard><Plans /></Guard>} />

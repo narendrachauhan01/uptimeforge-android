@@ -15,7 +15,7 @@ async function googleSignIn() {
 }
 
 export default function Login() {
-  const { setUser, showToast } = useAuth();
+  const { setUser, fetchUser, showToast } = useAuth();
   const nav = useNavigate();
   const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
@@ -28,8 +28,8 @@ export default function Login() {
     try {
       const idToken = await googleSignIn();
       if (!idToken) { showToast('Google Sign-In cancelled', 'error'); return; }
-      const { data } = await api.post('/api/users/google-auth', { credential: idToken });
-      setUser(data.user);
+      await api.post('/api/users/google-auth', { credential: idToken });
+      await fetchUser();
       nav('/dashboard');
     } catch (err) {
       showToast(err.displayMessage || err.response?.data?.error || 'Google Sign-In failed', 'error');

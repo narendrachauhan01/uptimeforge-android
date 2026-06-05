@@ -2,27 +2,24 @@ import { useState, useEffect, useCallback } from 'react';
 import api from '../api/axios';
 
 function AlertCard({ alert }) {
-  const isDown = alert.type === 'down' || alert.event === 'down';
-  const isUp = alert.type === 'up' || alert.event === 'up' || alert.type === 'recovery';
-  const isPing = alert.source === 'ping';
+  const isDown      = alert.type === 'down';
+  const isRecovered = alert.type === 'recovered';
+  const isPing      = alert.source === 'ping';
 
-  const color = isUp ? '#10b981' : isDown ? '#ef4444' : '#f59e0b';
-  const bg = isUp ? '#064e3b22' : isDown ? '#7f1d1d22' : '#78350f22';
-  const label = isUp ? 'RECOVERED' : isDown ? 'DOWN' : (alert.type || alert.event || '').toUpperCase();
+  const color = isRecovered ? '#10b981' : isDown ? '#ef4444' : '#f59e0b';
+  const bg    = isRecovered ? '#064e3b22' : isDown ? '#7f1d1d22' : '#78350f22';
+  const label = isRecovered ? 'RECOVERED' : isDown ? 'DOWN' : (alert.type || '').toUpperCase();
 
   const time = alert.createdAt
     ? new Date(alert.createdAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })
     : '';
 
   return (
-    <div style={{
-      background: '#1e1350', borderRadius: 14, border: '1px solid #2d1f6e',
-      padding: '14px 16px', marginBottom: 10,
-    }}>
+    <div style={{ background: '#1e1350', borderRadius: 14, border: '1px solid #2d1f6e', padding: '14px 16px', marginBottom: 10 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
         <div style={{ flex: 1, minWidth: 0, marginRight: 10 }}>
           <div style={{ fontSize: 14, fontWeight: 700, color: '#e2d9f3', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-            {isPing ? '🏓 ' : '🌐 '}{alert.siteName || alert.targetName || alert.url || 'Unknown'}
+            {isPing ? '🏓 ' : '🌐 '}{alert.serverName || alert.serverUrl || 'Unknown'}
           </div>
           <div style={{ fontSize: 12, color: '#8b7fb8', marginTop: 3 }}>{time}</div>
         </div>
@@ -57,9 +54,9 @@ export default function Alerts() {
     return () => clearInterval(id);
   }, [load]);
 
-  const filtered = filter === 'all' ? alerts
-    : filter === 'down' ? alerts.filter(a => a.type === 'down' || a.event === 'down')
-    : alerts.filter(a => a.type === 'up' || a.event === 'up' || a.type === 'recovery');
+  const filtered = filter === 'all'       ? alerts
+    : filter === 'down'                   ? alerts.filter(a => a.type === 'down')
+    : alerts.filter(a => a.type === 'recovered');
 
   const FilterTab = ({ value, label }) => (
     <button onClick={() => setFilter(value)} style={{
@@ -78,9 +75,9 @@ export default function Alerts() {
 
       <div style={{ padding: '16px 20px' }}>
         <div style={{ display: 'flex', background: '#1e1350', borderRadius: 12, padding: 4, gap: 4, marginBottom: 16 }}>
-          <FilterTab value="all" label={`All (${alerts.length})`} />
-          <FilterTab value="down" label="Down" />
-          <FilterTab value="up" label="Recovered" />
+          <FilterTab value="all"       label={`All (${alerts.length})`} />
+          <FilterTab value="down"      label="Down" />
+          <FilterTab value="recovered" label="Recovered" />
         </div>
 
         {loading ? <div className="spinner" /> : filtered.length === 0 ? (

@@ -15,7 +15,7 @@ async function googleSignIn() {
 }
 
 export default function Register() {
-  const { setUser, showToast } = useAuth();
+  const { setUser, fetchUser, showToast } = useAuth();
   const nav = useNavigate();
   const [form, setForm] = useState({ name: '', email: '', password: '', phone: '' });
   const [loading, setLoading] = useState(false);
@@ -28,9 +28,9 @@ export default function Register() {
     try {
       const idToken = await googleSignIn();
       if (!idToken) { showToast('Google Sign-In cancelled', 'error'); return; }
-      const { data } = await api.post('/api/users/google-auth', { credential: idToken });
-      setUser(data.user);
-      nav(data.user?.city ? '/dashboard' : '/complete-profile');
+      await api.post('/api/users/google-auth', { credential: idToken });
+      const freshUser = await fetchUser();
+      nav('/complete-profile');
     } catch (err) {
       showToast(err.displayMessage || err.response?.data?.error || 'Google Sign-In failed', 'error');
     } finally {

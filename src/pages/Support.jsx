@@ -2,33 +2,38 @@ import { useState, useEffect, useCallback } from 'react';
 import api from '../api/axios';
 import { useAuth } from '../App';
 
+const STATUS_COLOR = { open: '#f59e0b', in_progress: '#a78bfa', resolved: '#10b981', closed: '#6b7280' };
+
 function TicketCard({ ticket }) {
-  const statusColor = { open: '#f59e0b', resolved: '#10b981', closed: '#6b7280' };
-  const color = statusColor[ticket.status] || '#6b7280';
+  const color = STATUS_COLOR[ticket.status] || '#6b7280';
   const time = ticket.createdAt
     ? new Date(ticket.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
     : '';
+  const lastMsg = ticket.replies?.[ticket.replies.length - 1];
 
   return (
     <div style={{ background: '#1e1350', borderRadius: 14, border: '1px solid #2d1f6e', padding: '14px 16px', marginBottom: 10 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
         <div style={{ fontSize: 14, fontWeight: 700, flex: 1, marginRight: 10 }}>{ticket.subject}</div>
-        <span style={{ background: `${color}22`, color, border: `1px solid ${color}44`, borderRadius: 12, padding: '2px 8px', fontSize: 11, fontWeight: 700, flexShrink: 0 }}>
-          {ticket.status?.toUpperCase()}
+        <span style={{ background: `${color}22`, color, border: `1px solid ${color}44`, borderRadius: 12, padding: '2px 8px', fontSize: 11, fontWeight: 700, flexShrink: 0, whiteSpace: 'nowrap' }}>
+          {(ticket.status || '').replace('_', ' ').toUpperCase()}
         </span>
       </div>
-      <div style={{ fontSize: 12, color: '#8b7fb8' }}>{time}</div>
-      {ticket.messages?.[0]?.body && (
-        <div style={{ fontSize: 12, color: '#6b5fa8', marginTop: 6, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-          {ticket.messages[0].body}
+      <div style={{ fontSize: 12, color: '#6b7280' }}>{time} · {(ticket.priority || 'medium').toUpperCase()}</div>
+      {lastMsg && (
+        <div style={{ fontSize: 12, color: lastMsg.from === 'admin' ? '#a78bfa' : '#6b5fa8', marginTop: 6, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+          {lastMsg.from === 'admin' ? '↩ Admin: ' : ''}{lastMsg.message}
         </div>
+      )}
+      {ticket.userUnread && (
+        <div style={{ marginTop: 6, display: 'inline-block', background: '#7c3aed22', color: '#a78bfa', border: '1px solid #7c3aed44', borderRadius: 10, padding: '2px 8px', fontSize: 11, fontWeight: 700 }}>NEW REPLY</div>
       )}
     </div>
   );
 }
 
 export default function Support() {
-  const { showToast } = useAuth();
+  const { user, showToast } = useAuth();
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState('new');
@@ -51,8 +56,10 @@ export default function Support() {
     setSending(true);
     try {
       const fd = new FormData();
-      fd.append('subject', form.subject);
-      fd.append('message', form.message);
+      fd.append('name',     user?.name  || '');
+      fd.append('email',    user?.email || '');
+      fd.append('subject',  form.subject);
+      fd.append('message',  form.message);
       fd.append('priority', form.priority);
       await api.post('/api/users/support', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
       showToast('Ticket submitted! We\'ll reply soon.');
@@ -95,7 +102,6 @@ export default function Support() {
                 <option value="low">Low</option>
                 <option value="medium">Medium</option>
                 <option value="high">High</option>
-                <option value="critical">Critical</option>
               </select>
             </div>
             <div className="input-group">
@@ -105,7 +111,7 @@ export default function Support() {
                 style={{ resize: 'none', minHeight: 120 }} />
             </div>
             <button className="btn btn-primary" type="submit" disabled={sending} style={{ height: 52, fontSize: 16 }}>
-              {sending ? '⏳ Sending...' : '📩 Submit Ticket'}
+              {sending ? 'Sending...' : 'Submit Ticket'}
             </button>
           </form>
         ) : (
