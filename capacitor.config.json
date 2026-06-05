@@ -1,0 +1,14 @@
+{
+  "appId": "site.narendrasingh.uptimeforge",
+  "appName": "UptimeForge",
+  "webDir": "www",
+  "server": {
+    "url": "https://servermonitor.narendrasingh.site",
+    "cleartext": false
+  },
+  "android": {
+    "allowMixedContent": false,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": false
+  }
+}
