@@ -9,8 +9,9 @@ async function googleSignIn() {
     await GoogleAuth.initialize();
     const result = await GoogleAuth.signIn();
     return result?.authentication?.idToken || null;
-  } catch {
-    return null;
+  } catch (err) {
+    console.error('Google Sign-In error:', err);
+    throw err;
   }
 }
 
@@ -35,7 +36,8 @@ export default function Register() {
       await fetchUser();
       nav('/complete-profile');
     } catch (err) {
-      showToast(err.displayMessage || err.response?.data?.error || 'Google Sign-In failed', 'error');
+      const errorMsg = err.displayMessage || err.response?.data?.error || err.message || (typeof err === 'string' ? err : JSON.stringify(err)) || 'Google Sign-In failed';
+      showToast(errorMsg, 'error');
     } finally { setGLoading(false); }
   };
 
