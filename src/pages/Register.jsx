@@ -22,7 +22,7 @@ export default function Register() {
       setUser(data.user);
       nav('/complete-profile');
     } catch (err) {
-      showToast(err.response?.data?.message || 'Registration failed', 'error');
+      showToast(err.displayMessage || err.response?.data?.error || err.response?.data?.message || 'Registration failed', 'error');
     } finally { setLoading(false); }
   };
 
@@ -30,10 +30,14 @@ export default function Register() {
     <div className="page-no-nav" style={{ display: 'flex', flexDirection: 'column', minHeight: '100%' }}>
       <div style={{ padding: '50px 24px 24px', textAlign: 'center' }}>
         <div style={{
-          width: 72, height: 72, borderRadius: 20, background: '#7c3aed',
+          width: 80, height: 80, borderRadius: 22,
+          background: 'linear-gradient(135deg, #7c3aed, #5b21b6)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 36, margin: '0 auto 20px', boxShadow: '0 8px 32px #7c3aed55',
-        }}>📡</div>
+          margin: '0 auto 20px', boxShadow: '0 8px 32px #7c3aed55',
+          overflow: 'hidden',
+        }}>
+          <img src="/logo.png" alt="UptimeForge" style={{ width: 58, height: 58, objectFit: 'contain' }} />
+        </div>
         <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 6 }}>Create account</h1>
         <p style={{ color: '#8b7fb8', fontSize: 14 }}>Start monitoring for free</p>
       </div>

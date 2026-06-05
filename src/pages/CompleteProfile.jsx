@@ -46,7 +46,13 @@ export default function CompleteProfile() {
       showToast('Profile saved!');
       nav('/dashboard');
     } catch (err) {
-      showToast(err.displayMessage || err.response?.data?.error || 'Failed to save', 'error');
+      const msg = err.displayMessage || err.response?.data?.error || 'Failed to save';
+      if (err.response?.data?.planExpired || msg.toLowerCase().includes('upgrade') || msg.toLowerCase().includes('expired')) {
+        showToast('Plan expired. Please upgrade to save profile.', 'error');
+        nav('/plans');
+        return;
+      }
+      showToast(msg, 'error');
     } finally {
       setLoading(false);
     }

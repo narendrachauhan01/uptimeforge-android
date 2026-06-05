@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../api/axios';
 import { useAuth } from '../App';
@@ -8,8 +8,58 @@ export default function Login() {
   const nav = useNavigate();
   const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
+  const [gLoading, setGLoading] = useState(false);
+  const googleBtnRef = useRef(null);
 
   const set = k => e => setForm(f => ({ ...f, [k]: e.target.value }));
+
+  const handleGoogleCredential = async (response) => {
+    setGLoading(true);
+    try {
+      const { data } = await api.post('/api/users/google-auth', { credential: response.credential });
+      setUser(data.user);
+      nav('/dashboard');
+    } catch (err) {
+      showToast(err.displayMessage || err.response?.data?.error || 'Google Sign-In failed', 'error');
+    } finally {
+      setGLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const initGoogle = async () => {
+      try {
+        const { data } = await api.get('/api/users/config');
+        const clientId = data.googleClientId;
+        if (!clientId || !window.google) return;
+        window.google.accounts.id.initialize({
+          client_id: clientId,
+          callback: handleGoogleCredential,
+          ux_mode: 'popup',
+        });
+        if (googleBtnRef.current) {
+          window.google.accounts.id.renderButton(googleBtnRef.current, {
+            type: 'standard',
+            theme: 'filled_black',
+            size: 'large',
+            text: 'continue_with',
+            shape: 'rectangular',
+            width: Math.min(window.innerWidth - 48, 360),
+          });
+        }
+      } catch {}
+    };
+
+    // Wait for GSI script to load
+    if (window.google) {
+      initGoogle();
+    } else {
+      const t = setInterval(() => {
+        if (window.google) { clearInterval(t); initGoogle(); }
+      }, 300);
+      return () => clearInterval(t);
+    }
+  }, []);
 
   const submit = async e => {
     e.preventDefault();
@@ -20,7 +70,7 @@ export default function Login() {
       setUser(data.user);
       nav('/dashboard');
     } catch (err) {
-      showToast(err.response?.data?.message || 'Login failed', 'error');
+      showToast(err.displayMessage || err.response?.data?.error || 'Login failed', 'error');
     } finally {
       setLoading(false);
     }
@@ -64,6 +114,22 @@ export default function Login() {
             {loading ? '⏳ Signing in...' : 'Sign In'}
           </button>
         </form>
+
+        {/* Divider */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '20px 0' }}>
+          <div style={{ flex: 1, height: 1, background: '#2d1f6e' }} />
+          <span style={{ color: '#4a4070', fontSize: 12, fontWeight: 600 }}>OR</span>
+          <div style={{ flex: 1, height: 1, background: '#2d1f6e' }} />
+        </div>
+
+        {/* Google Sign-In button */}
+        <div style={{ display: 'flex', justifyContent: 'center', minHeight: 44, alignItems: 'center' }}>
+          {gLoading ? (
+            <div style={{ color: '#8b7fb8', fontSize: 14 }}>⏳ Signing in with Google...</div>
+          ) : (
+            <div ref={googleBtnRef} style={{ width: '100%', display: 'flex', justifyContent: 'center' }} />
+          )}
+        </div>
 
         <div style={{ textAlign: 'center', marginTop: 24, color: '#8b7fb8', fontSize: 14 }}>
           Don't have an account?{' '}

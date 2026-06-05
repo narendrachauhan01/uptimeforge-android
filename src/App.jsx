@@ -89,8 +89,11 @@ function Guard({ children }) {
   const accountStatus = user.accountStatus || 'active';
   if (accountStatus === 'suspended') return <SuspendedScreen />;
 
-  const needsProfile = !user.city || !user.gender || !user.phone;
-  if (needsProfile && loc.pathname !== '/complete-profile') return <Navigate to="/complete-profile" replace />;
+  // Only require profile when plan is active — expired users can't save anyway (backend blocks it)
+  if (accountStatus === 'active') {
+    const needsProfile = !user.city || !user.gender || !user.phone;
+    if (needsProfile && loc.pathname !== '/complete-profile') return <Navigate to="/complete-profile" replace />;
+  }
   return children;
 }
 
