@@ -72,6 +72,18 @@ export default function App() {
     return () => clearInterval(id);
   }, [user, fetchUser]);
 
+  // Android hardware back button
+  useEffect(() => {
+    const handler = e => {
+      if (window.history.length > 1) {
+        e.preventDefault();
+        window.history.back();
+      }
+    };
+    document.addEventListener('backbutton', handler);
+    return () => document.removeEventListener('backbutton', handler);
+  }, []);
+
   return (
     <AuthCtx.Provider value={{ user, setUser, loading, fetchUser, showToast }}>
       {showSplash && <Splash onDone={() => setShowSplash(false)} />}

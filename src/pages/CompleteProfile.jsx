@@ -6,44 +6,65 @@ import { useAuth } from '../App';
 const COUNTRIES = ['India', 'United States', 'United Kingdom', 'Canada', 'Australia', 'Germany', 'France', 'UAE', 'Singapore', 'Other'];
 
 export default function CompleteProfile() {
-  const { fetchUser, showToast } = useAuth();
+  const { user, fetchUser, showToast } = useAuth();
   const nav = useNavigate();
-  const [form, setForm] = useState({ phone: '', city: '', gender: '', country: 'India', state: '', purpose: '' });
+  const [form, setForm] = useState({
+    phone: user?.phone || '',
+    city: user?.city || '',
+    gender: user?.gender || '',
+    country: user?.country || 'India',
+    state: user?.state || '',
+    purpose: user?.purpose || '',
+  });
   const [loading, setLoading] = useState(false);
 
   const set = k => e => setForm(f => ({ ...f, [k]: e.target.value }));
 
   const submit = async e => {
     e.preventDefault();
-    if (!form.city || !form.gender || !form.phone || !form.purpose)
-      return showToast('Fill all required fields', 'error');
+    if (!form.city.trim()) return showToast('City is required', 'error');
+    if (!form.gender) return showToast('Gender is required', 'error');
+    if (!form.phone.trim()) return showToast('Phone is required', 'error');
+    if (!form.purpose) return showToast('Purpose is required', 'error');
+
     setLoading(true);
     try {
-      await api.put('/api/users/profile', form);
+      await api.put('/api/users/profile', {
+        phone: form.phone.trim(),
+        city: form.city.trim(),
+        gender: form.gender,
+        country: form.country,
+        state: form.state.trim(),
+        purpose: form.purpose,
+      });
       await fetchUser();
       showToast('Profile saved!');
       nav('/dashboard');
     } catch (err) {
-      showToast(err.response?.data?.message || 'Failed to save', 'error');
-    } finally { setLoading(false); }
+      showToast(err.displayMessage || err.response?.data?.error || 'Failed to save', 'error');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="page-no-nav" style={{ minHeight: '100%', padding: '50px 24px 40px' }}>
-      <div style={{ marginBottom: 32, textAlign: 'center' }}>
+      <div style={{ marginBottom: 28, textAlign: 'center' }}>
         <div style={{ fontSize: 40, marginBottom: 12 }}>👤</div>
         <h1 style={{ fontSize: 22, fontWeight: 800, marginBottom: 6 }}>Complete your profile</h1>
-        <p style={{ color: '#8b7fb8', fontSize: 14 }}>Just a few more details</p>
+        <p style={{ color: '#8b7fb8', fontSize: 14 }}>Just a few more details to get started</p>
       </div>
 
       <form onSubmit={submit}>
         <div className="input-group">
           <label className="input-label">Mobile Number *</label>
-          <input className="input" type="tel" placeholder="+91 9876543210" value={form.phone} onChange={set('phone')} />
+          <input className="input" type="tel" placeholder="+91 9876543210"
+            value={form.phone} onChange={set('phone')} inputMode="tel" />
         </div>
         <div className="input-group">
           <label className="input-label">City *</label>
-          <input className="input" placeholder="Mumbai" value={form.city} onChange={set('city')} />
+          <input className="input" placeholder="Mumbai"
+            value={form.city} onChange={set('city')} />
         </div>
         <div className="input-group">
           <label className="input-label">Gender *</label>
@@ -62,7 +83,8 @@ export default function CompleteProfile() {
         </div>
         <div className="input-group">
           <label className="input-label">State / Province</label>
-          <input className="input" placeholder="Maharashtra" value={form.state} onChange={set('state')} />
+          <input className="input" placeholder="Maharashtra"
+            value={form.state} onChange={set('state')} />
         </div>
         <div className="input-group">
           <label className="input-label">Account Purpose *</label>
@@ -76,7 +98,7 @@ export default function CompleteProfile() {
 
         <button className="btn btn-primary" type="submit" disabled={loading}
           style={{ marginTop: 8, height: 52, fontSize: 16 }}>
-          {loading ? '⏳ Saving...' : 'Save & Continue'}
+          {loading ? '⏳ Saving...' : 'Save & Continue →'}
         </button>
       </form>
     </div>
