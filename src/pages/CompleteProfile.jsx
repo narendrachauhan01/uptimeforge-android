@@ -58,12 +58,17 @@ export default function CompleteProfile() {
     }
   };
 
+  const canGoBack = !!(user && user.city && user.gender && user.phone);
+
   return (
-    <div className="page-no-nav" style={{ minHeight: '100%', padding: '50px 24px 40px' }}>
+    <div className="page-no-nav" style={{ minHeight: '100%', padding: '40px 24px 40px', display: 'flex', flexDirection: 'column' }}>
+      {canGoBack && (
+        <button onClick={() => nav(-1)} style={{ background: 'none', border: 'none', color: '#a78bfa', cursor: 'pointer', fontSize: 14, marginBottom: 16, padding: 0, alignSelf: 'flex-start' }}>← Back</button>
+      )}
       <div style={{ marginBottom: 28, textAlign: 'center' }}>
         <div style={{ fontSize: 40, marginBottom: 12 }}>👤</div>
-        <h1 style={{ fontSize: 22, fontWeight: 800, marginBottom: 6 }}>Complete your profile</h1>
-        <p style={{ color: '#8b7fb8', fontSize: 14 }}>Just a few more details to get started</p>
+        <h1 style={{ fontSize: 22, fontWeight: 800, marginBottom: 6 }}>{canGoBack ? 'Edit Profile' : 'Complete your profile'}</h1>
+        <p style={{ color: '#8b7fb8', fontSize: 14 }}>{canGoBack ? 'Update your profile settings below' : 'Just a few more details to get started'}</p>
       </div>
 
       <form onSubmit={submit}>

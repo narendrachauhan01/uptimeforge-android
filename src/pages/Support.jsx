@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import api from '../api/axios';
 import { useAuth } from '../App';
+import { useNavigate } from 'react-router-dom';
 
 const STATUS_COLOR = { open: '#f59e0b', in_progress: '#a78bfa', resolved: '#10b981', closed: '#6b7280' };
 
@@ -181,6 +182,7 @@ function TicketCard({ ticket, onClick }) {
 
 export default function Support() {
   const { user, showToast } = useAuth();
+  const nav = useNavigate();
   const [tickets, setTickets]       = useState([]);
   const [loading, setLoading]       = useState(true);
   const [tab, setTab]               = useState('new');
@@ -243,6 +245,7 @@ export default function Support() {
   return (
     <div className="page">
       <div style={{ padding: '52px 20px 16px', background: 'linear-gradient(180deg, #1a0a4e 0%, #0f0a1e 100%)' }}>
+        <button onClick={() => nav(-1)} style={{ background: 'none', border: 'none', color: '#a78bfa', cursor: 'pointer', fontSize: 14, marginBottom: 8, padding: 0 }}>← Back</button>
         <h1 style={{ fontSize: 22, fontWeight: 800 }}>Support</h1>
         <p style={{ color: '#8b7fb8', fontSize: 13, marginTop: 4 }}>Get help from our team</p>
       </div>
